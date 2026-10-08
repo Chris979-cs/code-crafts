@@ -7,7 +7,7 @@
 <title>Code Crafts — Application</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --blue:      #00a8ff;
@@ -34,12 +34,33 @@
     overflow-x:hidden;
   }
 
-  /* ---------- BACKGROUND LAYERS ---------- */
+  /* ============ BACKGROUND LAYERS ============ */
   .circuit{
     position:fixed; inset:0;
     width:100%; height:100%;
     z-index:0; pointer-events:none;
     opacity:.55;
+  }
+
+  /* Python logo watermark */
+  .python-logo{
+    position:fixed;
+    top:50%; left:50%;
+    width:min(78vmin, 760px);
+    height:min(78vmin, 760px);
+    transform:translate(-50%,-50%);
+    z-index:1;
+    pointer-events:none;
+    opacity:.13;
+    filter:drop-shadow(0 0 60px rgba(0,168,255,.35));
+  }
+  .python-mark{
+    animation:pythonFloat 22s ease-in-out infinite;
+    transform-origin:100px 100px;
+  }
+  @keyframes pythonFloat{
+    0%,100%{ transform:scale(1) rotate(0deg); }
+    50%    { transform:scale(1.04) rotate(2deg); }
   }
 
   .snake-layer{
@@ -83,7 +104,7 @@
       radial-gradient(85% 65% at 50% 50%,   transparent 25%, rgba(2,5,10,.80) 100%);
   }
 
-  /* ---------- LAYOUT ---------- */
+  /* ============ LAYOUT ============ */
   .wrap{
     position:relative; z-index:3;
     min-height:100vh;
@@ -91,11 +112,12 @@
     padding:56px 20px;
   }
 
-  /* ---------- GATE (lesson screen) ---------- */
-  .gate{
+  /* ============ SCREEN SYSTEM ============ */
+  .screen{
+    display:none;
     position:relative;
     width:min(720px,100%);
-    padding:36px 34px 32px;
+    padding:38px 36px 34px;
     border-radius:18px;
     border:1px solid var(--line);
     background:linear-gradient(180deg, rgba(9,18,32,.92), rgba(4,8,16,.96));
@@ -104,23 +126,39 @@
       0 0 70px rgba(0,120,255,.18),
       0 30px 70px rgba(0,0,0,.7);
     backdrop-filter:blur(8px);
-    animation:rise .7s cubic-bezier(.2,.8,.3,1) both;
-    transition:opacity .5s ease, transform .5s ease;
   }
-  .gate.leaving{
-    opacity:0;
-    transform:scale(.94) translateY(-14px);
-    pointer-events:none;
+  .screen.active{
+    display:block;
+    animation:screenIn .7s cubic-bezier(.2,.8,.3,1) both;
+  }
+  .screen.leaving{
+    animation:screenOut .5s ease forwards !important;
+  }
+  @keyframes screenIn{
+    from{ opacity:0; transform:scale(.94) translateY(18px); }
+    to  { opacity:1; transform:none; }
+  }
+  @keyframes screenOut{
+    from{ opacity:1; transform:none; }
+    to  { opacity:0; transform:scale(.94) translateY(-14px); }
   }
 
-  .gate-eyebrow{
-    margin:0 0 14px;
+  .screen::before, .screen::after{
+    content:''; position:absolute; width:26px; height:26px;
+    border:2px solid rgba(0,168,255,.75); pointer-events:none;
+  }
+  .screen::before{ top:-1px; left:-1px;  border-right:0; border-bottom:0; border-radius:18px 0 0 0; }
+  .screen::after { bottom:-1px; right:-1px; border-left:0; border-top:0;  border-radius:0 0 18px 0; }
+
+  /* ============ WELCOME SCREEN ============ */
+  .welcome-eyebrow{
+    margin:0 0 18px;
     font-family:'JetBrains Mono', monospace;
     font-size:11.5px; letter-spacing:.30em; text-transform:uppercase;
     color:var(--blue-soft);
     display:flex; align-items:center; gap:10px;
   }
-  .gate-eyebrow .dot{
+  .welcome-eyebrow .dot{
     width:8px; height:8px; border-radius:50%;
     background:#00e0a0;
     box-shadow:0 0 12px #00e0a0;
@@ -128,32 +166,122 @@
   }
   @keyframes pulse{
     0%,100%{ opacity:1; transform:scale(1); }
-    50%    { opacity:.45; transform:scale(.75); }
+    50%    { opacity:.4; transform:scale(.7); }
   }
 
-  .gate h2{
-    margin:0 0 14px;
-    font-size:clamp(24px, 4vw, 32px);
-    line-height:1.15;
+  .welcome-title{
+    margin:0 0 22px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:clamp(48px, 9vw, 84px);
+    font-weight:700;
+    letter-spacing:-.03em;
+    line-height:1;
     color:#eaf4ff;
+    display:flex; align-items:baseline; gap:14px;
+    text-shadow:0 0 40px rgba(0,168,255,.45);
+  }
+  .welcome-title .bracket{
+    color:var(--blue);
+    font-weight:400;
+    font-size:.65em;
+    text-shadow:0 0 20px rgba(0,168,255,.9);
+  }
+  .welcome-title .cursor{
+    display:inline-block;
+    width:.08em; height:.9em;
+    background:var(--cyan);
+    vertical-align:-.05em;
+    margin-left:-6px;
+    box-shadow:0 0 20px rgba(95,216,255,.9);
+    animation:blink 1s steps(2) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .welcome-text{
+    margin:0 0 14px;
+    font-size:16px; line-height:1.7;
+    color:var(--muted);
+    max-width:62ch;
+  }
+  .welcome-text b{ color:var(--cyan); font-weight:600; }
+
+  .welcome-flow{
+    display:flex; align-items:center; flex-wrap:wrap;
+    gap:10px 14px;
+    margin:26px 0 28px;
+    padding:16px 18px;
+    border-radius:11px;
+    border:1px dashed rgba(0,168,255,.28);
+    background:rgba(2,8,18,.55);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    letter-spacing:.04em;
+  }
+  .welcome-flow .step{
+    color:#7fb6e8;
+    display:flex; align-items:center; gap:8px;
+  }
+  .welcome-flow .step b{
+    color:var(--cyan);
+    font-weight:700;
+    background:rgba(0,168,255,.14);
+    border:1px solid rgba(0,168,255,.35);
+    border-radius:5px;
+    padding:2px 7px;
+    font-size:11px;
+  }
+  .welcome-flow .arrow{
+    color:rgba(0,168,255,.5);
+    font-size:14px;
+  }
+
+  /* ============ SHARED HEADINGS ============ */
+  .eyebrow{
+    margin:0 0 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px; letter-spacing:.30em; text-transform:uppercase;
+    color:var(--blue-soft);
+  }
+  .lesson-title{
+    margin:0 0 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:clamp(24px, 4.4vw, 36px);
+    line-height:1.15;
     font-weight:700;
     letter-spacing:-.01em;
+    color:#eaf4ff;
+    text-shadow:0 0 30px rgba(0,140,255,.35);
   }
-  .gate h2 code{
-    font-family:'JetBrains Mono', monospace;
+  .lesson-title code{
     background:linear-gradient(92deg, #00a8ff, #5fd8ff);
     -webkit-background-clip:text; background-clip:text;
     color:transparent;
     font-weight:700;
+    padding:0 4px;
   }
-  .gate p{
+  h1{
+    margin:0 0 16px;
+    font-size:clamp(30px, 5.2vw, 46px);
+    line-height:1.08;
+    letter-spacing:-.02em;
+    font-weight:700;
+    color:#eaf4ff;
+    text-shadow:0 0 28px rgba(0,140,255,.35);
+  }
+  h1 .accent{
+    background:linear-gradient(92deg, #00a8ff 0%, #6ee7ff 60%, #b8f0ff 100%);
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 0 18px rgba(0,168,255,.5));
+  }
+
+  .lesson-text{
     margin:0 0 18px;
+    font-size:15px; line-height:1.7;
     color:var(--muted);
-    font-size:15px;
-    line-height:1.7;
   }
-  .gate p b{ color:var(--cyan); font-weight:600; }
-  .gate p code{
+  .lesson-text b{ color:var(--cyan); font-weight:600; }
+  .lesson-text code{
     font-family:'JetBrains Mono', monospace;
     background:rgba(0,168,255,.10);
     color:var(--cyan);
@@ -163,7 +291,6 @@
     border:1px solid rgba(0,168,255,.2);
   }
 
-  /* mini terminal */
   .terminal{
     margin:6px 0 22px;
     border-radius:10px;
@@ -213,9 +340,7 @@
     animation:blink 1s steps(2) infinite;
     margin-left:2px;
   }
-  @keyframes blink{ 50%{ opacity:0; } }
 
-  /* input */
   .input-line{
     display:flex; align-items:center; gap:10px;
     padding:4px 14px;
@@ -258,7 +383,6 @@
   .hint.error{ color:var(--err); }
   .hint.ok   { color:var(--ok); }
 
-  /* buttons */
   .btn{
     width:100%;
     padding:16px;
@@ -283,7 +407,6 @@
   .btn:active:not(:disabled){ transform:translateY(0); }
   .btn:disabled{ opacity:.6; cursor:not-allowed; }
 
-  /* unlock flash */
   .flash{
     position:fixed; inset:0; z-index:6;
     pointer-events:none;
@@ -293,57 +416,7 @@
   }
   .flash.on{ opacity:1; }
 
-  /* ---------- MAIN CARD ---------- */
-  .card{
-    position:relative;
-    width:min(780px,100%);
-    padding:40px 36px 36px;
-    border-radius:18px;
-    border:1px solid var(--line);
-    background:linear-gradient(180deg, rgba(9,18,32,.90), rgba(4,8,16,.94));
-    box-shadow:
-      0 0 0 1px rgba(0,168,255,.05) inset,
-      0 0 70px rgba(0,120,255,.16),
-      0 30px 70px rgba(0,0,0,.65);
-    backdrop-filter:blur(7px);
-    opacity:0;
-    transform:scale(.94) translateY(18px);
-    pointer-events:none;
-    transition:opacity .7s cubic-bezier(.2,.8,.3,1), transform .7s cubic-bezier(.2,.8,.3,1);
-  }
-  .card.revealed{
-    opacity:1;
-    transform:none;
-    pointer-events:auto;
-  }
-  .card::before, .card::after{
-    content:''; position:absolute; width:26px; height:26px;
-    border:2px solid rgba(0,168,255,.75); pointer-events:none;
-  }
-  .card::before{ top:-1px; left:-1px;  border-right:0; border-bottom:0; border-radius:18px 0 0 0; }
-  .card::after { bottom:-1px; right:-1px; border-left:0; border-top:0;  border-radius:0 0 18px 0; }
-
-  .eyebrow{
-    margin:0 0 14px;
-    font-family:'JetBrains Mono', monospace;
-    font-size:11.5px; letter-spacing:.30em; text-transform:uppercase;
-    color:var(--blue-soft);
-  }
-  h1{
-    margin:0 0 16px;
-    font-size:clamp(30px, 5.2vw, 46px);
-    line-height:1.08;
-    letter-spacing:-.02em;
-    font-weight:700;
-    color:#eaf4ff;
-    text-shadow:0 0 28px rgba(0,140,255,.35);
-  }
-  h1 .accent{
-    background:linear-gradient(92deg, #00a8ff 0%, #6ee7ff 60%, #b8f0ff 100%);
-    -webkit-background-clip:text; background-clip:text;
-    color:transparent;
-    filter:drop-shadow(0 0 18px rgba(0,168,255,.5));
-  }
+  /* ============ APPLICATION CARD ============ */
   .lede{
     margin:0 0 26px;
     font-size:15.5px; line-height:1.7;
@@ -450,7 +523,6 @@
   .success{
     text-align:center;
     padding:22px 8px 8px;
-    animation:rise .5s ease both;
   }
   .success .icon{
     width:74px; height:74px;
@@ -488,25 +560,21 @@
     text-align:center;
   }
 
-  @keyframes rise{
-    from{ opacity:0; transform:translateY(18px); }
-    to  { opacity:1; transform:none; }
-  }
-
   @media (max-width:640px){
     .wrap{ padding:32px 14px; }
-    .gate{ padding:28px 20px 26px; border-radius:14px; }
-    .card{ padding:30px 20px 26px; border-radius:14px; }
+    .screen{ padding:28px 20px 26px; border-radius:14px; }
     .chips, .chips.cols-3{ grid-template-columns:repeat(2, 1fr); gap:10px; }
     .chip span{ padding:12px 6px; font-size:13px; }
     .lede{ font-size:14.5px; }
     .terminal pre{ font-size:12.5px; padding:13px 14px; }
+    .welcome-title{ font-size:56px; }
+    .python-logo{ width:90vmin; height:90vmin; }
   }
 </style>
 </head>
 <body>
 
-<!-- ===== CIRCUIT BOARD BACKGROUND ===== -->
+<!-- ============ CIRCUIT BOARD ============ -->
 <svg class="circuit" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <defs>
     <pattern id="pcb" width="200" height="200" patternUnits="userSpaceOnUse">
@@ -539,7 +607,75 @@
   <rect width="100%" height="100%" fill="url(#pcb)"/>
 </svg>
 
-<!-- ===== PYTHON SNAKE + FLOWING TRACES ===== -->
+<!-- ============ PYTHON LOGO WATERMARK (blue tones) ============ -->
+<svg class="python-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <linearGradient id="pyTop" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0%"   stop-color="#7be8ff"/>
+      <stop offset="100%" stop-color="#0088dd"/>
+    </linearGradient>
+    <linearGradient id="pyBot" x1="0.3" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#0090e6"/>
+      <stop offset="100%" stop-color="#003d80"/>
+    </linearGradient>
+  </defs>
+
+  <g class="python-mark">
+    <!-- UPPER SNAKE: body + head on right, tail curls down on left -->
+    <path d="M 62 32
+             C 42 32 34 46 34 62
+             L 34 86
+             L 52 86
+             L 52 66
+             C 52 56 58 48 70 48
+             L 128 48
+             C 142 48 148 56 148 68
+             L 148 96
+             C 148 108 142 116 128 116
+             L 102 116
+             C 92 116 84 108 84 96
+             L 84 88
+             C 84 80 78 76 70 76
+             L 52 76
+             L 52 86
+             C 52 96 60 104 74 104
+             L 130 104
+             C 152 104 166 90 166 68
+             L 166 62
+             C 166 42 150 32 130 32
+             Z"
+          fill="url(#pyTop)"/>
+    <circle cx="130" cy="64" r="6" fill="#eaf8ff"/>
+
+    <!-- LOWER SNAKE: mirror -->
+    <path d="M 138 168
+             C 158 168 166 154 166 138
+             L 166 114
+             L 148 114
+             L 148 134
+             C 148 144 142 152 130 152
+             L 72 152
+             C 58 152 52 144 52 132
+             L 52 104
+             C 52 92 58 84 72 84
+             L 98 84
+             C 108 84 116 92 116 104
+             L 116 112
+             C 116 120 122 124 130 124
+             L 148 124
+             L 148 114
+             C 148 104 140 96 126 96
+             L 70 96
+             C 48 96 34 110 34 132
+             L 34 138
+             C 34 158 50 168 70 168
+             Z"
+          fill="url(#pyBot)"/>
+    <circle cx="70" cy="136" r="6" fill="#eaf8ff"/>
+  </g>
+</svg>
+
+<!-- ============ PYTHON SNAKE STREAKS ============ -->
 <svg class="snake-layer" xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
   <defs>
@@ -563,7 +699,6 @@
           d="M -100,600 C 220,320 480,700 760,520 S 1050,300 1300,600"/>
   </defs>
 
-  <!-- Slithering streaks -->
   <path d="M -100,420 C 150,180 380,640 620,400 S 950,180 1300,420"
         fill="none" stroke="url(#snakeGrad)" stroke-width="5"
         stroke-linecap="round" stroke-dasharray="160 2600">
@@ -582,7 +717,6 @@
     <animate attributeName="stroke-dashoffset" from="2640" to="0" dur="19s" repeatCount="indefinite"/>
   </path>
 
-  <!-- Traveling snake heads -->
   <g>
     <circle r="9" fill="#5fd8ff">
       <animateMotion dur="16s" repeatCount="indefinite" rotate="auto">
@@ -618,7 +752,7 @@
   </g>
 </svg>
 
-<!-- ===== FLOATING CODE SNIPPETS ===== -->
+<!-- ============ FLOATING CODE SNIPPETS ============ -->
 <div class="floats" aria-hidden="true">
   <span style="--x:6%;  --d:0s;   --dur:22s; --fs:14px;">print("hello")</span>
   <span style="--x:18%; --d:3s;   --dur:26s; --fs:12px;">&lt;/&gt;</span>
@@ -635,14 +769,46 @@
 <div class="vignette"></div>
 <div class="flash" id="flash"></div>
 
-<!-- ===== CONTENT ===== -->
+<!-- ============ CONTENT ============ -->
 <div class="wrap">
 
-  <!-- ============ GATE / LESSON ============ -->
-  <section class="gate" id="gate">
-    <p class="gate-eyebrow"><span class="dot"></span> Boot Sequence · Step 1 of 1</p>
-    <h2>Quick Lesson: <code>print()</code></h2>
-    <p>
+  <!-- ============ SCREEN 1: WELCOME ============ -->
+  <section class="screen active" id="welcome">
+    <p class="welcome-eyebrow"><span class="dot"></span> Incoming transmission</p>
+
+    <h1 class="welcome-title">
+      <span class="bracket">&lt;</span>
+      HELLO
+      <span class="cursor"></span>
+      <span class="bracket">/&gt;</span>
+    </h1>
+
+    <p class="welcome-text">
+      Welcome to the <b>Code Crafts</b> application portal.
+    </p>
+    <p class="welcome-text">
+      Before you fill out the form, we're going to run one very quick lesson together.
+      It takes about 30 seconds. Prove you can follow along, and the application unlocks.
+    </p>
+
+    <div class="welcome-flow">
+      <span class="step"><b>01</b> Lesson</span>
+      <span class="arrow">→</span>
+      <span class="step"><b>02</b> Unlock</span>
+      <span class="arrow">→</span>
+      <span class="step"><b>03</b> Apply</span>
+    </div>
+
+    <button class="btn" id="startBtn" type="button">Start the Lesson →</button>
+  </section>
+
+  <!-- ============ SCREEN 2: LESSON ============ -->
+  <section class="screen" id="gate">
+    <p class="eyebrow">// Boot Sequence · Step 1 of 2</p>
+
+    <h2 class="lesson-title">Quick Lesson: <code>print()</code></h2>
+
+    <p class="lesson-text">
       In Python, <code>print()</code> is a <b>display function</b>. It tells the computer
       to show something on the screen — like a message in a terminal.
     </p>
@@ -657,9 +823,9 @@
 <span class="prompt">&gt;&gt;&gt;</span> <span class="cursor"></span></pre>
     </div>
 
-    <p>
-      Your turn. Write the code that displays the message: <b>sign uppage</b><br>
-      <span style="font-size:13px; opacity:.85;">Type it below exactly like a Python command, then press Run.</span>
+    <p class="lesson-text">
+      Your turn. Write the code that displays the message: <b>signup page</b><br>
+      <span style="font-size:13px; opacity:.85;">Type it exactly like a Python command, then press Run.</span>
     </p>
 
     <div class="input-line">
@@ -672,9 +838,8 @@
     <button class="btn" id="runBtn" type="button">Run Code</button>
   </section>
 
-  <!-- ============ MAIN FORM (hidden until unlock) ============ -->
-  <main class="card" id="mainCard">
-
+  <!-- ============ SCREEN 3: APPLICATION ============ -->
+  <main class="screen card" id="mainCard">
     <p class="eyebrow">// Code Crafts — Membership</p>
     <h1>Welcome to <span class="accent">Code Crafts</span></h1>
     <p class="lede">
@@ -733,38 +898,56 @@
     </section>
 
     <p class="foot">Code Crafts &nbsp;•&nbsp; Build · Break · Rebuild</p>
-
   </main>
 </div>
 
 <script>
 /* =========================================================
-   1) UNLOCK GATE  —  mini Python lesson
+   0) SCREEN SWITCHER
    ========================================================= */
+function showScreen(fromEl, toEl, delay){
+  delay = delay || 450;
+  fromEl.classList.add('leaving');
+  setTimeout(function(){
+    fromEl.classList.remove('active','leaving');
+    toEl.classList.add('active');
+    toEl.scrollIntoView({ behavior:'smooth', block:'center' });
+  }, delay);
+}
+
+/* =========================================================
+   1) WELCOME → LESSON
+   ========================================================= */
+const welcome  = document.getElementById('welcome');
 const gate     = document.getElementById('gate');
-const mainCard = document.getElementById('mainCard');
-const codeInput= document.getElementById('codeInput');
-const runBtn   = document.getElementById('runBtn');
-const hintEl   = document.getElementById('hint');
-const flash    = document.getElementById('flash');
+const startBtn = document.getElementById('startBtn');
+
+startBtn.addEventListener('click', function(){
+  showScreen(welcome, gate);
+});
+
+/* =========================================================
+   2) LESSON GATE
+   ========================================================= */
+const mainCard  = document.getElementById('mainCard');
+const codeInput = document.getElementById('codeInput');
+const runBtn    = document.getElementById('runBtn');
+const hintEl    = document.getElementById('hint');
+const flash     = document.getElementById('flash');
 
 const HINT_DEFAULT = 'Hint: use brackets <b>( )</b> and quotes <b>" "</b> around the text.';
-
-/* Accept these spellings of the target phrase */
-const VALID_TARGETS = ['sign uppage', 'signuppage', 'sign up page', 'signup page'];
+const VALID_TARGETS = ['signup page', 'sign up page'];
 
 function validate(userCode){
   const raw = userCode;
   const c   = raw.toLowerCase();
 
-  /* 1. must contain the word "print" spelled correctly */
   if (!/\bprint\b/.test(c)) {
     if (/prin|pritn|printt|pint/.test(c))
       return 'Almost! Check the spelling of <b>print</b> — it should be exactly <b>print</b>.';
     return 'You need to use the <b>print</b> function to display something.';
   }
 
-  /* 2. must have parentheses with something inside */
   const paren = raw.match(/print\s*\(([^)]*)\)/i);
   if (!paren) {
     if (raw.includes('print') && !raw.includes('('))
@@ -776,18 +959,16 @@ function validate(userCode){
 
   const inside = paren[1].trim();
 
-  /* 3. must be wrapped in quotes */
   if (!/^["'].*["']$/.test(inside)) {
-    return 'Put quotes around the message — like <b>"sign uppage"</b>.';
+    return 'Put quotes around the message — like <b>"signup page"</b>.';
   }
 
-  /* 4. content check */
   const msg = inside.slice(1, -1).toLowerCase().replace(/\s+/g, ' ').trim();
   if (!VALID_TARGETS.includes(msg)) {
-    return 'Almost! The message inside should be <b>sign uppage</b>.';
+    return 'Almost! The message inside should be <b>signup page</b>.';
   }
 
-  return null; // success!
+  return null;
 }
 
 function setHint(html, cls){
@@ -796,75 +977,60 @@ function setHint(html, cls){
   if (cls) hintEl.classList.add(cls);
 }
 
+function escapeHTML(s){
+  return s.replace(/[&<>"']/g, function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
 function unlock(){
   setHint('✔  Access granted. Launching Code Crafts…', 'ok');
   runBtn.disabled = true;
   runBtn.textContent = 'Unlocking…';
 
-  /* terminal shows the executed line */
   const term = gate.querySelector('.terminal pre');
   term.innerHTML =
     '<span class="prompt">&gt;&gt;&gt;</span> ' + escapeHTML(codeInput.value) + '\n' +
-    '<span class="out">sign uppage</span>\n' +
+    '<span class="out">signup page</span>\n' +
     '<span class="prompt">&gt;&gt;&gt;</span> <span class="cursor"></span>';
 
-  /* flash */
   flash.classList.add('on');
 
-  setTimeout(() => {
-    gate.classList.add('leaving');
+  setTimeout(function(){
     flash.classList.remove('on');
-    mainCard.classList.add('revealed');
-
-    setTimeout(() => {
-      gate.style.display = 'none';
-      mainCard.scrollIntoView({ behavior:'smooth', block:'center' });
-    }, 600);
+    showScreen(gate, mainCard, 700);
   }, 700);
 }
 
-function escapeHTML(s){
-  return s.replace(/[&<>"']/g, ch => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[ch]));
-}
-
-runBtn.addEventListener('click', () => {
+runBtn.addEventListener('click', function(){
   const err = validate(codeInput.value);
-  if (err) {
-    setHint(err, 'error');
-    codeInput.focus();
-    return;
-  }
+  if (err){ setHint(err, 'error'); codeInput.focus(); return; }
   unlock();
 });
 
-codeInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    runBtn.click();
-  }
+codeInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter'){ e.preventDefault(); runBtn.click(); }
 });
 
-codeInput.addEventListener('input', () => {
+codeInput.addEventListener('input', function(){
   if (hintEl.classList.contains('error')) setHint(HINT_DEFAULT);
 });
 
 /* =========================================================
-   2) FORM LOGIC  —  year → section reveal + FormSubmit
+   3) APPLICATION FORM
    ========================================================= */
-const form        = document.getElementById('applyForm');
-const sectionBlk  = document.getElementById('sectionBlock');
-const sectionTtl  = document.getElementById('sectionTitle');
-const errorEl     = document.getElementById('formError');
-const submitBtn   = document.getElementById('submitBtn');
-const successEl   = document.getElementById('success');
+const form       = document.getElementById('applyForm');
+const sectionBlk = document.getElementById('sectionBlock');
+const sectionTtl = document.getElementById('sectionTitle');
+const errorEl    = document.getElementById('formError');
+const submitBtn  = document.getElementById('submitBtn');
+const successEl  = document.getElementById('success');
 
 const ENDPOINT = 'https://formsubmit.co/ajax/enternalmangekyusharingan1@gmail.com';
 
-document.querySelectorAll('input[name="Year"]').forEach(function (radio) {
-  radio.addEventListener('change', function () {
-    document.querySelectorAll('input[name="Section"]').forEach(s => s.checked = false);
+document.querySelectorAll('input[name="Year"]').forEach(function(radio){
+  radio.addEventListener('change', function(){
+    document.querySelectorAll('input[name="Section"]').forEach(function(s){ s.checked = false; });
     sectionTtl.innerHTML = 'Choose your section — <b>Year ' + radio.value + '</b>';
     sectionBlk.classList.add('open');
     errorEl.hidden = true;
@@ -876,7 +1042,7 @@ function showError(msg){
   errorEl.hidden = false;
 }
 
-form.addEventListener('submit', async function (e) {
+form.addEventListener('submit', async function(e){
   e.preventDefault();
   errorEl.hidden = true;
 
