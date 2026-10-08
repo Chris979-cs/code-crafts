@@ -13,10 +13,13 @@
     --blue:      #00a8ff;
     --blue-soft: #4fc3f7;
     --blue-deep: #0a84ff;
+    --cyan:      #5fd8ff;
     --bg:        #04070e;
     --text:      #dbe9ff;
     --muted:     #8296b3;
     --line:      rgba(0,168,255,.28);
+    --ok:        #3ddc97;
+    --err:       #ff6b81;
   }
 
   *{ box-sizing:border-box; }
@@ -31,29 +34,53 @@
     overflow-x:hidden;
   }
 
-  /* ---------- CIRCUIT BOARD BACKGROUND ---------- */
+  /* ---------- BACKGROUND LAYERS ---------- */
   .circuit{
     position:fixed; inset:0;
     width:100%; height:100%;
-    z-index:0;
-    pointer-events:none;
+    z-index:0; pointer-events:none;
     opacity:.55;
   }
+
+  .snake-layer{
+    position:fixed; inset:0;
+    width:100%; height:100%;
+    z-index:1; pointer-events:none;
+    opacity:.85;
+  }
+
+  /* floating code snippets */
+  .floats{
+    position:fixed; inset:0;
+    z-index:1; pointer-events:none;
+    overflow:hidden;
+  }
+  .floats span{
+    position:absolute;
+    bottom:-40px;
+    left:var(--x);
+    font-family:'JetBrains Mono', monospace;
+    font-size:var(--fs, 13px);
+    color:rgba(95,216,255,.55);
+    text-shadow:0 0 10px rgba(0,168,255,.6);
+    animation:rise var(--dur, 18s) linear infinite;
+    animation-delay:var(--d, 0s);
+    white-space:nowrap;
+    opacity:0;
+  }
+  @keyframes rise{
+    0%   { transform:translateY(0)    scale(1);   opacity:0; }
+    10%  { opacity:.9; }
+    90%  { opacity:.9; }
+    100% { transform:translateY(-110vh) scale(1.1); opacity:0; }
+  }
+
   .vignette{
-    position:fixed; inset:0; z-index:1; pointer-events:none;
+    position:fixed; inset:0; z-index:2; pointer-events:none;
     background:
       radial-gradient(120% 90% at 50% 0%,   rgba(0,110,220,.18), transparent 55%),
       radial-gradient(100% 80% at 50% 100%, rgba(0,80,180,.13),  transparent 60%),
-      radial-gradient(85% 65% at 50% 50%,   transparent 25%, rgba(2,5,10,.78) 100%);
-  }
-  .scan{
-    position:fixed; inset:-25%; z-index:1; pointer-events:none;
-    background:radial-gradient(circle at 50% 50%, rgba(0,160,255,.13), transparent 42%);
-    animation:scan 14s ease-in-out infinite alternate;
-  }
-  @keyframes scan{
-    0%   { transform:translate(-14%,-10%) scale(1); }
-    100% { transform:translate(14%,10%) scale(1.18); }
+      radial-gradient(85% 65% at 50% 50%,   transparent 25%, rgba(2,5,10,.80) 100%);
   }
 
   /* ---------- LAYOUT ---------- */
@@ -64,6 +91,209 @@
     padding:56px 20px;
   }
 
+  /* ---------- GATE (lesson screen) ---------- */
+  .gate{
+    position:relative;
+    width:min(720px,100%);
+    padding:36px 34px 32px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(9,18,32,.92), rgba(4,8,16,.96));
+    box-shadow:
+      0 0 0 1px rgba(0,168,255,.05) inset,
+      0 0 70px rgba(0,120,255,.18),
+      0 30px 70px rgba(0,0,0,.7);
+    backdrop-filter:blur(8px);
+    animation:rise .7s cubic-bezier(.2,.8,.3,1) both;
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .gate.leaving{
+    opacity:0;
+    transform:scale(.94) translateY(-14px);
+    pointer-events:none;
+  }
+
+  .gate-eyebrow{
+    margin:0 0 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px; letter-spacing:.30em; text-transform:uppercase;
+    color:var(--blue-soft);
+    display:flex; align-items:center; gap:10px;
+  }
+  .gate-eyebrow .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:#00e0a0;
+    box-shadow:0 0 12px #00e0a0;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%    { opacity:.45; transform:scale(.75); }
+  }
+
+  .gate h2{
+    margin:0 0 14px;
+    font-size:clamp(24px, 4vw, 32px);
+    line-height:1.15;
+    color:#eaf4ff;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .gate h2 code{
+    font-family:'JetBrains Mono', monospace;
+    background:linear-gradient(92deg, #00a8ff, #5fd8ff);
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+    font-weight:700;
+  }
+  .gate p{
+    margin:0 0 18px;
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.7;
+  }
+  .gate p b{ color:var(--cyan); font-weight:600; }
+  .gate p code{
+    font-family:'JetBrains Mono', monospace;
+    background:rgba(0,168,255,.10);
+    color:var(--cyan);
+    padding:2px 7px;
+    border-radius:5px;
+    font-size:13.5px;
+    border:1px solid rgba(0,168,255,.2);
+  }
+
+  /* mini terminal */
+  .terminal{
+    margin:6px 0 22px;
+    border-radius:10px;
+    border:1px solid rgba(0,168,255,.28);
+    background:rgba(2,7,14,.85);
+    overflow:hidden;
+    box-shadow:inset 0 0 40px rgba(0,110,210,.10);
+  }
+  .terminal-bar{
+    display:flex; align-items:center; gap:7px;
+    padding:9px 14px;
+    background:rgba(0,168,255,.06);
+    border-bottom:1px solid rgba(0,168,255,.18);
+  }
+  .terminal-bar span{
+    width:10px; height:10px; border-radius:50%;
+    background:#3a4a60;
+  }
+  .terminal-bar span:nth-child(1){ background:#ff5f57; }
+  .terminal-bar span:nth-child(2){ background:#febc2e; }
+  .terminal-bar span:nth-child(3){ background:#28c840; }
+  .terminal-bar em{
+    margin-left:auto;
+    font-style:normal;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:#5b7794;
+    letter-spacing:.08em;
+  }
+  .terminal pre{
+    margin:0;
+    padding:16px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    line-height:1.75;
+    color:#c9e5ff;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .terminal .prompt{ color:var(--blue); }
+  .terminal .out   { color:#7fe4b8; }
+  .terminal .cursor{
+    display:inline-block;
+    width:8px; height:16px;
+    background:var(--cyan);
+    vertical-align:-3px;
+    animation:blink 1s steps(2) infinite;
+    margin-left:2px;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* input */
+  .input-line{
+    display:flex; align-items:center; gap:10px;
+    padding:4px 14px;
+    border-radius:10px;
+    border:1px solid rgba(0,168,255,.28);
+    background:rgba(2,7,14,.9);
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .input-line:focus-within{
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(0,168,255,.14), 0 0 24px rgba(0,168,255,.28);
+  }
+  .input-line .prompt{
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    color:var(--blue);
+    user-select:none;
+  }
+  .input-line input{
+    flex:1;
+    background:transparent;
+    border:0; outline:0;
+    padding:14px 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:15px;
+    color:#eaf8ff;
+    letter-spacing:.02em;
+  }
+  .input-line input::placeholder{ color:#3f5d7d; }
+
+  .hint{
+    margin:10px 2px 20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    color:#7fb6e8;
+    letter-spacing:.02em;
+    min-height:18px;
+    transition:color .2s;
+  }
+  .hint.error{ color:var(--err); }
+  .hint.ok   { color:var(--ok); }
+
+  /* buttons */
+  .btn{
+    width:100%;
+    padding:16px;
+    border-radius:11px;
+    border:1px solid #00a8ff;
+    background:linear-gradient(180deg, #0092e6, #0063ad);
+    color:#fff;
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .25s ease, filter .2s;
+    box-shadow:0 0 24px rgba(0,168,255,.36), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+  .btn:hover:not(:disabled){
+    transform:translateY(-2px);
+    box-shadow:0 0 40px rgba(0,168,255,.65), inset 0 1px 0 rgba(255,255,255,.25);
+    filter:brightness(1.08);
+  }
+  .btn:active:not(:disabled){ transform:translateY(0); }
+  .btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+  /* unlock flash */
+  .flash{
+    position:fixed; inset:0; z-index:6;
+    pointer-events:none;
+    background:radial-gradient(circle at 50% 50%, rgba(120,230,255,.85), rgba(0,168,255,.35) 30%, transparent 65%);
+    opacity:0;
+    transition:opacity .5s ease;
+  }
+  .flash.on{ opacity:1; }
+
+  /* ---------- MAIN CARD ---------- */
   .card{
     position:relative;
     width:min(780px,100%);
@@ -76,14 +306,16 @@
       0 0 70px rgba(0,120,255,.16),
       0 30px 70px rgba(0,0,0,.65);
     backdrop-filter:blur(7px);
-    animation:rise .7s cubic-bezier(.2,.8,.3,1) both;
+    opacity:0;
+    transform:scale(.94) translateY(18px);
+    pointer-events:none;
+    transition:opacity .7s cubic-bezier(.2,.8,.3,1), transform .7s cubic-bezier(.2,.8,.3,1);
   }
-  @keyframes rise{
-    from{ opacity:0; transform:translateY(18px); }
-    to  { opacity:1; transform:none; }
+  .card.revealed{
+    opacity:1;
+    transform:none;
+    pointer-events:auto;
   }
-
-  /* corner brackets */
   .card::before, .card::after{
     content:''; position:absolute; width:26px; height:26px;
     border:2px solid rgba(0,168,255,.75); pointer-events:none;
@@ -91,13 +323,11 @@
   .card::before{ top:-1px; left:-1px;  border-right:0; border-bottom:0; border-radius:18px 0 0 0; }
   .card::after { bottom:-1px; right:-1px; border-left:0; border-top:0;  border-radius:0 0 18px 0; }
 
-  /* ---------- HEADER ---------- */
   .eyebrow{
     margin:0 0 14px;
     font-family:'JetBrains Mono', monospace;
     font-size:11.5px; letter-spacing:.30em; text-transform:uppercase;
     color:var(--blue-soft);
-    opacity:.9;
   }
   h1{
     margin:0 0 16px;
@@ -126,9 +356,7 @@
     box-shadow:0 0 14px rgba(0,168,255,.5);
   }
 
-  /* ---------- FORM ---------- */
   .field{ margin-bottom:24px; }
-
   .field > label,
   .legend{
     display:block;
@@ -139,7 +367,7 @@
   }
   .legend .req{ color:#ff6b81; margin-left:2px; }
 
-  input[type="text"]{
+  input[type="text"].text-input{
     width:100%;
     padding:14px 16px;
     border-radius:10px;
@@ -151,15 +379,14 @@
     outline:none;
     transition:border-color .2s, box-shadow .2s, background .2s;
   }
-  input[type="text"]::placeholder{ color:#44658a; }
-  input[type="text"]:hover{ border-color:rgba(0,168,255,.45); }
-  input[type="text"]:focus{
+  input[type="text"].text-input::placeholder{ color:#44658a; }
+  input[type="text"].text-input:hover{ border-color:rgba(0,168,255,.45); }
+  input[type="text"].text-input:focus{
     border-color:var(--blue);
     background:rgba(4,14,28,.95);
     box-shadow:0 0 0 3px rgba(0,168,255,.14), 0 0 24px rgba(0,168,255,.28);
   }
 
-  /* chip checkboxes / radios */
   .chips{
     display:grid;
     grid-template-columns:repeat(4, 1fr);
@@ -168,9 +395,7 @@
   .chips.cols-3{ grid-template-columns:repeat(3, 1fr); }
 
   .chip{ position:relative; cursor:pointer; }
-  .chip input{
-    position:absolute; opacity:0; width:1px; height:1px; pointer-events:none;
-  }
+  .chip input{ position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
   .chip span{
     display:flex; align-items:center; justify-content:center;
     padding:14px 8px;
@@ -195,20 +420,14 @@
     box-shadow:0 0 20px rgba(0,168,255,.38), inset 0 0 14px rgba(0,168,255,.15);
     text-shadow:0 0 10px rgba(0,200,255,.7);
   }
-  .chip input:focus-visible + span{
-    outline:2px solid var(--blue);
-    outline-offset:3px;
-  }
+  .chip input:focus-visible + span{ outline:2px solid var(--blue); outline-offset:3px; }
 
-  /* section reveal */
   .section-block{
     max-height:0; opacity:0; overflow:hidden;
     margin-bottom:0;
     transition:max-height .5s cubic-bezier(.2,.8,.3,1), opacity .35s ease, margin-bottom .4s ease;
   }
-  .section-block.open{
-    max-height:520px; opacity:1; margin-bottom:24px;
-  }
+  .section-block.open{ max-height:520px; opacity:1; margin-bottom:24px; }
   .section-title{
     margin:0 0 12px;
     font-family:'JetBrains Mono', monospace;
@@ -216,32 +435,6 @@
     color:#7fb6e8;
   }
   .section-title b{ color:#5fd8ff; }
-
-  /* submit */
-  .btn{
-    width:100%;
-    padding:17px;
-    margin-top:6px;
-    border-radius:12px;
-    border:1px solid #00a8ff;
-    background:linear-gradient(180deg, #0092e6, #0063ad);
-    color:#ffffff;
-    font-family:'JetBrains Mono', monospace;
-    font-size:14.5px;
-    font-weight:700;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    cursor:pointer;
-    transition:transform .18s ease, box-shadow .25s ease, filter .2s;
-    box-shadow:0 0 26px rgba(0,168,255,.38), inset 0 1px 0 rgba(255,255,255,.18);
-  }
-  .btn:hover:not(:disabled){
-    transform:translateY(-2px);
-    box-shadow:0 0 42px rgba(0,168,255,.65), inset 0 1px 0 rgba(255,255,255,.25);
-    filter:brightness(1.08);
-  }
-  .btn:active:not(:disabled){ transform:translateY(0); }
-  .btn:disabled{ opacity:.6; cursor:not-allowed; }
 
   .error{
     margin:0 0 16px;
@@ -254,7 +447,6 @@
     font-size:13px;
   }
 
-  /* success */
   .success{
     text-align:center;
     padding:22px 8px 8px;
@@ -296,12 +488,19 @@
     text-align:center;
   }
 
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(18px); }
+    to  { opacity:1; transform:none; }
+  }
+
   @media (max-width:640px){
     .wrap{ padding:32px 14px; }
+    .gate{ padding:28px 20px 26px; border-radius:14px; }
     .card{ padding:30px 20px 26px; border-radius:14px; }
     .chips, .chips.cols-3{ grid-template-columns:repeat(2, 1fr); gap:10px; }
     .chip span{ padding:12px 6px; font-size:13px; }
     .lede{ font-size:14.5px; }
+    .terminal pre{ font-size:12.5px; padding:13px 14px; }
   }
 </style>
 </head>
@@ -311,25 +510,20 @@
 <svg class="circuit" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <defs>
     <pattern id="pcb" width="200" height="200" patternUnits="userSpaceOnUse">
-      <!-- traces -->
       <g fill="none" stroke="#0a84ff" stroke-width="1.3"
          stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
-        <!-- horizontal runs -->
         <path d="M0 30 H70 L90 50 H200"/>
         <path d="M0 110 H30 L50 90 H130 L150 110 H200"/>
         <path d="M0 170 H100 L120 150 H180 L200 170"/>
-        <!-- vertical runs -->
         <path d="M30 0 V90 L10 110 V200"/>
         <path d="M10 0 V90 L30 110 V200"/>
         <path d="M170 0 V90 L190 110 V200"/>
         <path d="M190 0 V90 L170 110 V200"/>
-        <!-- stub traces -->
         <path d="M110 50 V72"/>
         <path d="M80 90 V68"/>
         <path d="M60 170 V188"/>
         <path d="M120 150 V128"/>
       </g>
-      <!-- vias / pads -->
       <g fill="#0a84ff" opacity="0.6">
         <circle cx="110" cy="72"  r="2.6"/>
         <circle cx="80"  cy="68"  r="2.6"/>
@@ -345,12 +539,141 @@
   <rect width="100%" height="100%" fill="url(#pcb)"/>
 </svg>
 
-<div class="scan"></div>
+<!-- ===== PYTHON SNAKE + FLOWING TRACES ===== -->
+<svg class="snake-layer" xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="snakeGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#00a8ff" stop-opacity="0"/>
+      <stop offset="35%"  stop-color="#5fd8ff" stop-opacity=".85"/>
+      <stop offset="65%"  stop-color="#00e0a0" stop-opacity=".9"/>
+      <stop offset="100%" stop-color="#00a8ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="snakeGrad2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#5fd8ff" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#00a8ff" stop-opacity=".8"/>
+      <stop offset="100%" stop-color="#5fd8ff" stop-opacity="0"/>
+    </linearGradient>
+
+    <path id="snakePath1" fill="none"
+          d="M -100,420 C 150,180 380,640 620,400 S 950,180 1300,420"/>
+    <path id="snakePath2" fill="none"
+          d="M -100,220 C 250,520 500,80 780,420 S 1080,620 1300,240"/>
+    <path id="snakePath3" fill="none"
+          d="M -100,600 C 220,320 480,700 760,520 S 1050,300 1300,600"/>
+  </defs>
+
+  <!-- Slithering streaks -->
+  <path d="M -100,420 C 150,180 380,640 620,400 S 950,180 1300,420"
+        fill="none" stroke="url(#snakeGrad)" stroke-width="5"
+        stroke-linecap="round" stroke-dasharray="160 2600">
+    <animate attributeName="stroke-dashoffset" from="2760" to="0" dur="16s" repeatCount="indefinite"/>
+  </path>
+
+  <path d="M -100,220 C 250,520 500,80 780,420 S 1080,620 1300,240"
+        fill="none" stroke="url(#snakeGrad2)" stroke-width="4"
+        stroke-linecap="round" stroke-dasharray="130 2400">
+    <animate attributeName="stroke-dashoffset" from="2530" to="0" dur="21s" repeatCount="indefinite"/>
+  </path>
+
+  <path d="M -100,600 C 220,320 480,700 760,520 S 1050,300 1300,600"
+        fill="none" stroke="url(#snakeGrad)" stroke-width="4"
+        stroke-linecap="round" stroke-dasharray="140 2500" opacity=".8">
+    <animate attributeName="stroke-dashoffset" from="2640" to="0" dur="19s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Traveling snake heads -->
+  <g>
+    <circle r="9" fill="#5fd8ff">
+      <animateMotion dur="16s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#snakePath1"/>
+      </animateMotion>
+      <animate attributeName="r" values="7;10;7" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="18" fill="#00a8ff" opacity=".25">
+      <animateMotion dur="16s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#snakePath1"/>
+      </animateMotion>
+    </circle>
+  </g>
+  <g>
+    <circle r="7" fill="#00e0a0">
+      <animateMotion dur="21s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#snakePath2"/>
+      </animateMotion>
+      <animate attributeName="r" values="5;8;5" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="15" fill="#00e0a0" opacity=".22">
+      <animateMotion dur="21s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#snakePath2"/>
+      </animateMotion>
+    </circle>
+  </g>
+  <g opacity=".8">
+    <circle r="7" fill="#5fd8ff">
+      <animateMotion dur="19s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#snakePath3"/>
+      </animateMotion>
+    </circle>
+  </g>
+</svg>
+
+<!-- ===== FLOATING CODE SNIPPETS ===== -->
+<div class="floats" aria-hidden="true">
+  <span style="--x:6%;  --d:0s;   --dur:22s; --fs:14px;">print("hello")</span>
+  <span style="--x:18%; --d:3s;   --dur:26s; --fs:12px;">&lt;/&gt;</span>
+  <span style="--x:29%; --d:7s;   --dur:20s; --fs:15px;">{ }</span>
+  <span style="--x:41%; --d:1s;   --dur:28s; --fs:13px;">def name():</span>
+  <span style="--x:52%; --d:9s;   --dur:24s; --fs:14px;">() =&gt; {}</span>
+  <span style="--x:63%; --d:4s;   --dur:27s; --fs:12px;">[i for i in x]</span>
+  <span style="--x:74%; --d:11s;  --dur:21s; --fs:14px;">import</span>
+  <span style="--x:85%; --d:5s;   --dur:25s; --fs:13px;"># code</span>
+  <span style="--x:93%; --d:13s;  --dur:23s; --fs:12px;">return</span>
+  <span style="--x:35%; --d:16s;  --dur:29s; --fs:12px;">True / False</span>
+</div>
+
 <div class="vignette"></div>
+<div class="flash" id="flash"></div>
 
 <!-- ===== CONTENT ===== -->
 <div class="wrap">
-  <main class="card">
+
+  <!-- ============ GATE / LESSON ============ -->
+  <section class="gate" id="gate">
+    <p class="gate-eyebrow"><span class="dot"></span> Boot Sequence · Step 1 of 1</p>
+    <h2>Quick Lesson: <code>print()</code></h2>
+    <p>
+      In Python, <code>print()</code> is a <b>display function</b>. It tells the computer
+      to show something on the screen — like a message in a terminal.
+    </p>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span></span><span></span><span></span>
+        <em>python shell</em>
+      </div>
+      <pre><span class="prompt">&gt;&gt;&gt;</span> print("hello world")
+<span class="out">hello world</span>
+<span class="prompt">&gt;&gt;&gt;</span> <span class="cursor"></span></pre>
+    </div>
+
+    <p>
+      Your turn. Write the code that displays the message: <b>sign uppage</b><br>
+      <span style="font-size:13px; opacity:.85;">Type it below exactly like a Python command, then press Run.</span>
+    </p>
+
+    <div class="input-line">
+      <span class="prompt">&gt;&gt;&gt;</span>
+      <input type="text" id="codeInput" placeholder='print("...")' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+
+    <p class="hint" id="hint">Hint: use brackets <b>( )</b> and quotes <b>" "</b> around the text.</p>
+
+    <button class="btn" id="runBtn" type="button">Run Code</button>
+  </section>
+
+  <!-- ============ MAIN FORM (hidden until unlock) ============ -->
+  <main class="card" id="mainCard">
 
     <p class="eyebrow">// Code Crafts — Membership</p>
     <h1>Welcome to <span class="accent">Code Crafts</span></h1>
@@ -365,12 +688,12 @@
 
       <div class="field">
         <label for="fullName">Full Name <span style="color:#ff6b81">*</span></label>
-        <input type="text" id="fullName" name="Full Name" placeholder="e.g. Abebe Bekele" required autocomplete="name">
+        <input type="text" class="text-input" id="fullName" name="Full Name" placeholder="e.g. Abebe Bekele" required autocomplete="name">
       </div>
 
       <div class="field">
         <label for="contact">Telegram Username or Phone Number <span style="color:#ff6b81">*</span></label>
-        <input type="text" id="contact" name="Telegram / Phone" placeholder="@username  or  +251 9XX XXX XXX" required>
+        <input type="text" class="text-input" id="contact" name="Telegram / Phone" placeholder="@username  or  +251 9XX XXX XXX" required>
       </div>
 
       <div class="field">
@@ -399,7 +722,6 @@
 
       <button type="submit" class="btn" id="submitBtn">Submit Application</button>
 
-      <!-- honeypot (spam trap) -->
       <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
     </form>
 
@@ -416,74 +738,184 @@
 </div>
 
 <script>
-  const form        = document.getElementById('applyForm');
-  const sectionBlk  = document.getElementById('sectionBlock');
-  const sectionTtl  = document.getElementById('sectionTitle');
-  const errorEl     = document.getElementById('formError');
-  const submitBtn   = document.getElementById('submitBtn');
-  const successEl   = document.getElementById('success');
+/* =========================================================
+   1) UNLOCK GATE  —  mini Python lesson
+   ========================================================= */
+const gate     = document.getElementById('gate');
+const mainCard = document.getElementById('mainCard');
+const codeInput= document.getElementById('codeInput');
+const runBtn   = document.getElementById('runBtn');
+const hintEl   = document.getElementById('hint');
+const flash    = document.getElementById('flash');
 
-  const ENDPOINT = 'https://formsubmit.co/ajax/enternalmangekyusharingan1@gmail.com';
+const HINT_DEFAULT = 'Hint: use brackets <b>( )</b> and quotes <b>" "</b> around the text.';
 
-  /* --- show section list when a year is picked --- */
-  document.querySelectorAll('input[name="Year"]').forEach(function (radio) {
-    radio.addEventListener('change', function () {
-      document.querySelectorAll('input[name="Section"]').forEach(function (s) { s.checked = false; });
-      sectionTtl.innerHTML = 'Choose your section — <b>Year ' + radio.value + '</b>';
-      sectionBlk.classList.add('open');
-      errorEl.hidden = true;
-    });
-  });
+/* Accept these spellings of the target phrase */
+const VALID_TARGETS = ['sign uppage', 'signuppage', 'sign up page', 'signup page'];
 
-  function showError(msg) {
-    errorEl.textContent = msg;
-    errorEl.hidden = false;
+function validate(userCode){
+  const raw = userCode;
+  const c   = raw.toLowerCase();
+
+  /* 1. must contain the word "print" spelled correctly */
+  if (!/\bprint\b/.test(c)) {
+    if (/prin|pritn|printt|pint/.test(c))
+      return 'Almost! Check the spelling of <b>print</b> — it should be exactly <b>print</b>.';
+    return 'You need to use the <b>print</b> function to display something.';
   }
 
-  /* --- submit --- */
-  form.addEventListener('submit', async function (e) {
+  /* 2. must have parentheses with something inside */
+  const paren = raw.match(/print\s*\(([^)]*)\)/i);
+  if (!paren) {
+    if (raw.includes('print') && !raw.includes('('))
+      return 'Missing the opening bracket <b>(</b> after <b>print</b>.';
+    if (raw.includes('(') && !raw.includes(')'))
+      return 'Missing the closing bracket <b>)</b>.';
+    return 'Wrap the message in brackets like this: <b>print("...")</b>';
+  }
+
+  const inside = paren[1].trim();
+
+  /* 3. must be wrapped in quotes */
+  if (!/^["'].*["']$/.test(inside)) {
+    return 'Put quotes around the message — like <b>"sign uppage"</b>.';
+  }
+
+  /* 4. content check */
+  const msg = inside.slice(1, -1).toLowerCase().replace(/\s+/g, ' ').trim();
+  if (!VALID_TARGETS.includes(msg)) {
+    return 'Almost! The message inside should be <b>sign uppage</b>.';
+  }
+
+  return null; // success!
+}
+
+function setHint(html, cls){
+  hintEl.innerHTML = html;
+  hintEl.classList.remove('error','ok');
+  if (cls) hintEl.classList.add(cls);
+}
+
+function unlock(){
+  setHint('✔  Access granted. Launching Code Crafts…', 'ok');
+  runBtn.disabled = true;
+  runBtn.textContent = 'Unlocking…';
+
+  /* terminal shows the executed line */
+  const term = gate.querySelector('.terminal pre');
+  term.innerHTML =
+    '<span class="prompt">&gt;&gt;&gt;</span> ' + escapeHTML(codeInput.value) + '\n' +
+    '<span class="out">sign uppage</span>\n' +
+    '<span class="prompt">&gt;&gt;&gt;</span> <span class="cursor"></span>';
+
+  /* flash */
+  flash.classList.add('on');
+
+  setTimeout(() => {
+    gate.classList.add('leaving');
+    flash.classList.remove('on');
+    mainCard.classList.add('revealed');
+
+    setTimeout(() => {
+      gate.style.display = 'none';
+      mainCard.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 600);
+  }, 700);
+}
+
+function escapeHTML(s){
+  return s.replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+
+runBtn.addEventListener('click', () => {
+  const err = validate(codeInput.value);
+  if (err) {
+    setHint(err, 'error');
+    codeInput.focus();
+    return;
+  }
+  unlock();
+});
+
+codeInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
     e.preventDefault();
+    runBtn.click();
+  }
+});
+
+codeInput.addEventListener('input', () => {
+  if (hintEl.classList.contains('error')) setHint(HINT_DEFAULT);
+});
+
+/* =========================================================
+   2) FORM LOGIC  —  year → section reveal + FormSubmit
+   ========================================================= */
+const form        = document.getElementById('applyForm');
+const sectionBlk  = document.getElementById('sectionBlock');
+const sectionTtl  = document.getElementById('sectionTitle');
+const errorEl     = document.getElementById('formError');
+const submitBtn   = document.getElementById('submitBtn');
+const successEl   = document.getElementById('success');
+
+const ENDPOINT = 'https://formsubmit.co/ajax/enternalmangekyusharingan1@gmail.com';
+
+document.querySelectorAll('input[name="Year"]').forEach(function (radio) {
+  radio.addEventListener('change', function () {
+    document.querySelectorAll('input[name="Section"]').forEach(s => s.checked = false);
+    sectionTtl.innerHTML = 'Choose your section — <b>Year ' + radio.value + '</b>';
+    sectionBlk.classList.add('open');
     errorEl.hidden = true;
-
-    const year    = form.querySelector('input[name="Year"]:checked');
-    const section = form.querySelector('input[name="Section"]:checked');
-
-    if (!year) {
-      showError('Please select your year (9 – 12).');
-      return;
-    }
-    if (!section) {
-      sectionBlk.classList.add('open');
-      showError('Please pick your section (Alpha – Zeta).');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'TRANSMITTING…';
-
-    const data = new FormData(form);
-    data.append('_subject', 'Code Crafts Application — ' + (data.get('Full Name') || 'New Applicant'));
-    data.append('_template', 'table');
-    data.append('_captcha', 'false');
-
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: data
-      });
-      if (!res.ok) throw new Error('Request failed');
-
-      form.hidden = true;
-      successEl.hidden = false;
-      successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } catch (err) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit Application';
-      showError('Transmission failed. Check your connection and try again.');
-    }
   });
+});
+
+function showError(msg){
+  errorEl.textContent = msg;
+  errorEl.hidden = false;
+}
+
+form.addEventListener('submit', async function (e) {
+  e.preventDefault();
+  errorEl.hidden = true;
+
+  const year    = form.querySelector('input[name="Year"]:checked');
+  const section = form.querySelector('input[name="Section"]:checked');
+
+  if (!year){ showError('Please select your year (9 – 12).'); return; }
+  if (!section){
+    sectionBlk.classList.add('open');
+    showError('Please pick your section (Alpha – Zeta).');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'TRANSMITTING…';
+
+  const data = new FormData(form);
+  data.append('_subject', 'Code Crafts Application — ' + (data.get('Full Name') || 'New Applicant'));
+  data.append('_template', 'table');
+  data.append('_captcha', 'false');
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: data
+    });
+    if (!res.ok) throw new Error('Request failed');
+
+    form.hidden = true;
+    successEl.hidden = false;
+    successEl.scrollIntoView({ behavior:'smooth', block:'center' });
+  } catch (err) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Application';
+    showError('Transmission failed. Check your connection and try again.');
+  }
+});
 </script>
 
 </body>
-</html>            
+</html>
