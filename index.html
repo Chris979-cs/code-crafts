@@ -1046,16 +1046,33 @@ form.addEventListener('submit', async function(e){
   e.preventDefault();
   errorEl.hidden = true;
 
-  const year    = form.querySelector('input[name="Year"]:checked');
-  const section = form.querySelector('input[name="Section"]:checked');
+    const nameEl    = document.getElementById('fullName');
+  const contactEl = document.getElementById('contact');
+  const year      = form.querySelector('input[name="Year"]:checked');
+  const section   = form.querySelector('input[name="Section"]:checked');
 
-  if (!year){ showError('Please select your year (9 – 12).'); return; }
+  const nameVal    = nameEl.value.trim();
+  const contactVal = contactEl.value.trim();
+
+  if (nameVal.length < 2){
+    showError('Please enter your full name.');
+    nameEl.focus();
+    return;
+  }
+  if (contactVal.length < 3){
+    showError('Please enter your Telegram username or phone number.');
+    contactEl.focus();
+    return;
+  }
+  if (!year){
+    showError('Please select your year (9 – 12).');
+    return;
+  }
   if (!section){
     sectionBlk.classList.add('open');
     showError('Please pick your section (Alpha – Zeta).');
     return;
   }
-
   submitBtn.disabled = true;
   submitBtn.textContent = 'TRANSMITTING…';
 
