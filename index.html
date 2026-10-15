@@ -462,7 +462,7 @@
 
   .chips{
     display:grid;
-    grid-template-columns:repeat(4, 1fr);
+    grid-template-columns:repeat(5, 1fr);
     gap:12px;
   }
   .chips.cols-3{ grid-template-columns:repeat(3, 1fr); }
@@ -621,7 +621,6 @@
   </defs>
 
   <g class="python-mark">
-    <!-- UPPER SNAKE: body + head on right, tail curls down on left -->
     <path d="M 62 32
              C 42 32 34 46 34 62
              L 34 86
@@ -647,7 +646,6 @@
           fill="url(#pyTop)"/>
     <circle cx="130" cy="64" r="6" fill="#eaf8ff"/>
 
-    <!-- LOWER SNAKE: mirror -->
     <path d="M 138 168
              C 158 168 166 154 166 138
              L 166 114
@@ -864,6 +862,7 @@
       <div class="field">
         <span class="legend">Year <span class="req">*</span></span>
         <div class="chips">
+          <label class="chip"><input type="radio" name="Year" value="8"><span>Year 8</span></label>
           <label class="chip"><input type="radio" name="Year" value="9"><span>Year 9</span></label>
           <label class="chip"><input type="radio" name="Year" value="10"><span>Year 10</span></label>
           <label class="chip"><input type="radio" name="Year" value="11"><span>Year 11</span></label>
@@ -1046,7 +1045,7 @@ form.addEventListener('submit', async function(e){
   e.preventDefault();
   errorEl.hidden = true;
 
-    const nameEl    = document.getElementById('fullName');
+  const nameEl    = document.getElementById('fullName');
   const contactEl = document.getElementById('contact');
   const year      = form.querySelector('input[name="Year"]:checked');
   const section   = form.querySelector('input[name="Section"]:checked');
@@ -1065,7 +1064,7 @@ form.addEventListener('submit', async function(e){
     return;
   }
   if (!year){
-    showError('Please select your year (9 – 12).');
+    showError('Please select your year (8 – 12).');
     return;
   }
   if (!section){
@@ -1073,6 +1072,7 @@ form.addEventListener('submit', async function(e){
     showError('Please pick your section (Alpha – Zeta).');
     return;
   }
+
   submitBtn.disabled = true;
   submitBtn.textContent = 'TRANSMITTING…';
 
